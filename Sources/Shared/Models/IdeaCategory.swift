@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import SwiftUI
 
 /// A **Space** — or, one level down, a **Collection** inside one.
 ///
@@ -25,10 +26,18 @@ final class IdeaCategory {
 
     var name: String = ""
 
-    /// Six-digit RRGGBB, no leading hash. Assigned round-robin from `Self.palette` when
-    /// the category is created, so the colour set stays harmonious no matter what the
-    /// model names things.
-    var colorHex: String = "B4561A"
+    /// Six-digit RRGGBB, no leading hash. Assigned from `SpaceColor` when the category is
+    /// created, so the colour set stays harmonious no matter what the model names things.
+    var colorHex: String = "BC976A"
+
+    /// True once a person has picked this colour themselves.
+    ///
+    /// The same bargain as `isUserOwned` and the importance override: a colour Remli chose
+    /// is a suggestion it may revise, and a colour you chose is yours. Without this flag
+    /// the palette migration would flatten a deliberate choice back to whatever the hue
+    /// matcher preferred, which is the sort of thing that only shows up months later when
+    /// someone notices their Space is the wrong green again.
+    var colorIsUserSet: Bool = false
 
     /// An SF Symbol name chosen at creation. Validated before use — a hallucinated symbol
     /// name would otherwise render as a blank space.
@@ -99,28 +108,68 @@ final class IdeaCategory {
 
 extension IdeaCategory {
 
-    /// A deliberately small, harmonious set. Restricting the model to these keeps the app
-    /// looking designed rather than letting it pick arbitrary colours.
-    static let palette: [String] = [
-        "B4561A", // ember
-        "1F6F63", // pine
-        "5B4B8A", // iris
-        "A03D5B", // rose
-        "3A6EA5", // slate blue
-        "7A6220", // olive
-        "8A4B2A", // clay
-        "45636F", // steel
-    ]
+    /// What a Space is allowed to be. See `SpaceColor` for why these particular values.
+    static let palette: [String] = SpaceColor.allCases.map(\.hex)
 
     /// Stable per name, so a category keeps its colour across devices without needing the
     /// choice synced, and the same name never flickers between colours.
     static func suggestedColor(for name: String) -> String {
-        guard !palette.isEmpty else { return "B4561A" }
+        guard !palette.isEmpty else { return SpaceColor.amber.hex }
         var hash: UInt64 = 5381
         for byte in name.lowercased().utf8 {
             hash = (hash &* 33) &+ UInt64(byte)
         }
         return palette[Int(hash % UInt64(palette.count))]
+    }
+
+    /// The Space's colour as something drawable, with the fallback in one place rather than
+    /// repeated at a dozen call sites.
+    var color: Color {
+        Color(hex: colorHex) ?? Theme.Palette.ember
+    }
+
+    /// Which palette entry this is, when it is one.
+    var paletteColor: SpaceColor? { SpaceColor.named(hex: colorHex) }
+
+    /// Records a chosen colour, and marks it as chosen.
+    ///
+    /// A Collection follows its Space, so recolouring Business recolours everything filed
+    /// under it — the whole reason a Collection inherits its colour in the first place is
+    /// that a glance at the list should read as "these all belong together".
+    func setColor(_ choice: SpaceColor, cascadeToChildren: Bool = true) {
+        colorHex = choice.hex
+        colorIsUserSet = true
+
+        guard cascadeToChildren else { return }
+        for child in children ?? [] where !child.colorIsUserSet {
+            child.colorHex = choice.hex
+        }
+    }
+
+    // MARK: - Palette migration
+
+    /// Pulls Spaces coloured under the old scheme into the new palette.
+    ///
+    /// The previous set was eight hand-picked hexes with luminance varying by nearly 2×,
+    /// so any two Spaces on screen together disagreed about how loud they were. Adding a
+    /// picker without this would leave every Space that already exists clashing with every
+    /// one chosen afterwards — which is the exact complaint the picker is meant to answer.
+    ///
+    /// Matching is by hue, so a Space that was blue stays blue. Anything the person picked
+    /// themselves is left alone, and anything already in the palette is skipped, which
+    /// makes this idempotent and free to run on every launch.
+    @discardableResult
+    static func harmonisePalette(in context: ModelContext) -> Int {
+        let descriptor = FetchDescriptor<IdeaCategory>()
+        guard let all = try? context.fetch(descriptor) else { return 0 }
+
+        var changed = 0
+        for category in all where !category.colorIsUserSet {
+            guard !SpaceColor.contains(hex: category.colorHex) else { continue }
+            category.colorHex = SpaceColor.nearest(toHex: category.colorHex).hex
+            changed += 1
+        }
+        return changed
     }
 
     var ideaCount: Int { ideas?.count ?? 0 }

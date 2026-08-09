@@ -150,6 +150,8 @@ struct SpaceCoverChooser: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Theme.Space.lg) {
 
+                    colorSection
+
                     VStack(alignment: .leading, spacing: Theme.Space.xs) {
                         PhotosPicker(selection: $selection, matching: .images, photoLibrary: .shared()) {
                             Label(
@@ -208,7 +210,7 @@ struct SpaceCoverChooser: View {
                 .padding(Theme.Space.md)
             }
             .background(Theme.Palette.canvas)
-            .navigationTitle("Cover")
+            .navigationTitle("Look")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -217,6 +219,62 @@ struct SpaceCoverChooser: View {
             }
         }
         .task(id: selection) { await load() }
+    }
+
+    /// Choosing the Space's colour.
+    ///
+    /// Above the cover options on purpose: the colour is the thing that survives every
+    /// other choice. It tints the wash over your photograph, it tints this Space's whole
+    /// screen, and it is the node colour on the map — so it is the decision the rest of
+    /// them sit inside, not a footnote after them.
+    private var colorSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.sm) {
+            HStack(alignment: .firstTextBaseline) {
+                Text("COLOUR")
+                    .font(Theme.Typography.sectionLabel)
+                    .foregroundStyle(Theme.Palette.inkMuted)
+                    .tracking(0.6)
+
+                Spacer()
+
+                Text(space.paletteColor?.name ?? "Custom")
+                    .font(Theme.Typography.meta)
+                    .foregroundStyle(space.color)
+            }
+
+            ForEach(SpaceColor.grouped(), id: \.family) { entry in
+                VStack(alignment: .leading, spacing: Theme.Space.xxs) {
+                    Text(entry.family.rawValue)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(Theme.Palette.inkMuted.opacity(0.7))
+
+                    HStack(spacing: Theme.Space.xs) {
+                        ForEach(entry.colors) { choice in
+                            Button {
+                                withAnimation(Theme.Motion.standard) {
+                                    space.setColor(choice)
+                                }
+                            } label: {
+                                ColorSwatch(
+                                    choice: choice,
+                                    isSelected: space.colorHex.uppercased() == choice.hex
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(choice.name)
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+
+            Text("Every colour here sits at the same weight, so no two Spaces\ncan end up shouting over each other.")
+                .font(Theme.Typography.meta)
+                .foregroundStyle(Theme.Palette.inkMuted.opacity(0.8))
+                .lineSpacing(2)
+                .padding(.top, 2)
+        }
     }
 
     private func load() async {
@@ -250,6 +308,36 @@ struct SpaceCoverChooser: View {
         // 0.8 is past the point where the difference is visible under a colour wash and a
         // darkening ramp, and roughly a fifth of the bytes of lossless.
         return rendered.jpegData(compressionQuality: 0.8)
+    }
+}
+
+/// One colour, as a disc rather than a square.
+///
+/// Round because these are the same objects that appear as nodes on the map, and a chooser
+/// that shows squares for something you will later see as circles is quietly teaching the
+/// wrong thing. The selection ring is drawn in the colour itself rather than in the app's
+/// accent, so picking a swatch previews what that Space is about to look like.
+private struct ColorSwatch: View {
+    let choice: SpaceColor
+    let isSelected: Bool
+
+    var body: some View {
+        Circle()
+            .fill(choice.color)
+            .frame(width: 30, height: 30)
+            .overlay(
+                Circle()
+                    .strokeBorder(Theme.Palette.canvas, lineWidth: isSelected ? 2.5 : 0)
+            )
+            .overlay(
+                Circle()
+                    .strokeBorder(
+                        isSelected ? choice.color : .white.opacity(0.10),
+                        lineWidth: isSelected ? 2 : 0.5
+                    )
+                    .padding(isSelected ? -3.5 : 0)
+            )
+            .frame(width: 38, height: 38)
     }
 }
 
