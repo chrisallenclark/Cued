@@ -95,6 +95,18 @@ struct SpaceView: View {
         .navigationTitle(space.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+        // In the navigation bar, not floating on the banner.
+        //
+        // It used to sit at the banner's top-trailing corner — but the banner deliberately
+        // runs under the status bar and the navigation bar, so the control was tucked
+        // behind the chrome: mostly invisible, and largely untappable where it did show.
+        // The one screen that could change a Space's appearance had a button nobody could
+        // press, which read as the feature simply not existing.
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                SpaceLookButton(space: space)
+            }
+        }
     }
 
     // MARK: - The environment
@@ -138,10 +150,6 @@ struct SpaceView: View {
             }
             .padding(Theme.Space.md)
             .shadow(color: .black.opacity(0.5), radius: 8, y: 1)
-        }
-        .overlay(alignment: .topTrailing) {
-            SpaceCoverPicker(space: space)
-                .padding(Theme.Space.sm)
         }
         .frame(height: 260)
         .padding(.bottom, Theme.Space.xs)

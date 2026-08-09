@@ -125,7 +125,10 @@ struct SpacesView: View {
         if !spaces.contains(where: { $0.name.lowercased() == normalized }) {
             let space = IdeaCategory(
                 name: name,
-                symbolName: "square.stack.3d.up",
+                // Guessed from the name rather than the same hard-coded glyph for
+                // everything. The icon's job on the Spaces grid is to let you find a tile
+                // without reading it, and six identical icons cannot do that at all.
+                symbolName: SpaceSymbol.suggested(for: name).symbolName,
                 isUserOwned: true
             )
             context.insert(space)

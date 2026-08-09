@@ -98,8 +98,12 @@ struct SpaceCover: View {
     }
 }
 
-/// The button that opens the cover chooser.
-struct SpaceCoverPicker: View {
+/// The button that opens the appearance chooser.
+///
+/// Lives in the navigation bar. A paintbrush rather than a photo icon, because the sheet
+/// stopped being only about covers — colour and icon are in there too, and a photo glyph
+/// would advertise a third of what is behind it.
+struct SpaceLookButton: View {
 
     @Bindable var space: IdeaCategory
     @State private var isChoosing = false
@@ -108,13 +112,16 @@ struct SpaceCoverPicker: View {
         Button {
             isChoosing = true
         } label: {
-            Image(systemName: "photo.on.rectangle.angled")
+            Image(systemName: "paintbrush")
                 .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.white.opacity(0.92))
-                .padding(8)
-                .background(Circle().fill(.black.opacity(0.35)))
+                .foregroundStyle(.white.opacity(0.95))
+                .frame(width: 30, height: 30)
+                // Its own dark disc: the navigation bar is transparent over the cover, so
+                // there is no telling what is behind the glyph.
+                .background(Circle().fill(.black.opacity(0.4)))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("Change how this Space looks")
         .sheet(isPresented: $isChoosing) {
             SpaceCoverChooser(space: space)
         }
@@ -151,6 +158,8 @@ struct SpaceCoverChooser: View {
                 VStack(alignment: .leading, spacing: Theme.Space.lg) {
 
                     colorSection
+
+                    symbolSection
 
                     VStack(alignment: .leading, spacing: Theme.Space.xs) {
                         PhotosPicker(selection: $selection, matching: .images, photoLibrary: .shared()) {
@@ -277,6 +286,47 @@ struct SpaceCoverChooser: View {
         }
     }
 
+    /// Choosing the Space's icon.
+    ///
+    /// Thirty-six in six groups, drawn in the Space's own colour so the two choices are
+    /// visibly one decision rather than two unrelated settings.
+    private var symbolSection: some View {
+        VStack(alignment: .leading, spacing: Theme.Space.sm) {
+            Text("ICON")
+                .font(Theme.Typography.sectionLabel)
+                .foregroundStyle(Theme.Palette.inkMuted)
+                .tracking(0.6)
+
+            ForEach(SpaceSymbol.grouped(), id: \.group) { entry in
+                VStack(alignment: .leading, spacing: Theme.Space.xxs) {
+                    Text(entry.group.rawValue)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(Theme.Palette.inkMuted.opacity(0.7))
+
+                    HStack(spacing: Theme.Space.xs) {
+                        ForEach(entry.symbols) { choice in
+                            Button {
+                                withAnimation(Theme.Motion.standard) {
+                                    space.setSymbol(choice)
+                                }
+                            } label: {
+                                SymbolSwatch(
+                                    choice: choice,
+                                    tint: space.color,
+                                    isSelected: space.symbolName == choice.symbolName
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(choice.group.rawValue + " icon")
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+        }
+    }
+
     private func load() async {
         guard let selection else { return }
 
@@ -338,6 +388,30 @@ private struct ColorSwatch: View {
                     .padding(isSelected ? -3.5 : 0)
             )
             .frame(width: 38, height: 38)
+    }
+}
+
+private struct SymbolSwatch: View {
+    let choice: SpaceSymbol
+    let tint: Color
+    let isSelected: Bool
+
+    var body: some View {
+        Image(systemName: choice.symbolName)
+            .font(.system(size: 15, weight: .light))
+            .foregroundStyle(isSelected ? tint : Theme.Palette.inkMuted)
+            .frame(width: 38, height: 38)
+            .background(
+                RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
+                    .fill(isSelected ? tint.opacity(0.16) : Theme.Palette.surface)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
+                    .strokeBorder(
+                        isSelected ? tint : Theme.Palette.hairline,
+                        lineWidth: isSelected ? 1.5 : 0.5
+                    )
+            )
     }
 }
 

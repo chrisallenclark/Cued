@@ -39,6 +39,9 @@ final class IdeaCategory {
     /// someone notices their Space is the wrong green again.
     var colorIsUserSet: Bool = false
 
+    /// True once a person has picked the icon themselves. Same bargain as the colour.
+    var symbolIsUserSet: Bool = false
+
     /// An SF Symbol name chosen at creation. Validated before use — a hallucinated symbol
     /// name would otherwise render as a blank space.
     var symbolName: String = "lightbulb"
@@ -131,6 +134,16 @@ extension IdeaCategory {
     /// Which palette entry this is, when it is one.
     var paletteColor: SpaceColor? { SpaceColor.named(hex: colorHex) }
 
+    var paletteSymbol: SpaceSymbol? { SpaceSymbol.named(symbolName) }
+
+    /// Records a chosen icon. Unlike the colour this does **not** cascade: a Collection
+    /// shares its Space's colour so the group reads as one thing, but its icon is the only
+    /// way to tell "Trainer tools" from "Lead gen" at a glance.
+    func setSymbol(_ choice: SpaceSymbol) {
+        symbolName = choice.symbolName
+        symbolIsUserSet = true
+    }
+
     /// Records a chosen colour, and marks it as chosen.
     ///
     /// A Collection follows its Space, so recolouring Business recolours everything filed
@@ -164,10 +177,20 @@ extension IdeaCategory {
         guard let all = try? context.fetch(descriptor) else { return 0 }
 
         var changed = 0
-        for category in all where !category.colorIsUserSet {
-            guard !SpaceColor.contains(hex: category.colorHex) else { continue }
-            category.colorHex = SpaceColor.nearest(toHex: category.colorHex).hex
-            changed += 1
+        for category in all {
+            if !category.colorIsUserSet, !SpaceColor.contains(hex: category.colorHex) {
+                category.colorHex = SpaceColor.nearest(toHex: category.colorHex).hex
+                changed += 1
+            }
+
+            // Every hand-made Space was born with the same hard-coded icon, so the icon on
+            // the Spaces grid distinguished nothing. Only placeholders are replaced —
+            // anything specific, whether picked by a person or proposed by the model, is
+            // already doing its job and is left alone.
+            if !category.symbolIsUserSet, SpaceSymbol.genericNames.contains(category.symbolName) {
+                category.symbolName = SpaceSymbol.suggested(for: category.name).symbolName
+                changed += 1
+            }
         }
         return changed
     }
