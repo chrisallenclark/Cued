@@ -98,6 +98,60 @@ struct SpaceCover: View {
     }
 }
 
+/// A Space's cover, blurred past recognition, for use as a whole-screen ground.
+///
+/// The same source as the tile — its photo, its chosen cover, or failing both its colour —
+/// so the room you are standing in is unmistakably the one whose card is in front of you,
+/// without ever competing with the card for attention. Blurred hard and dimmed hard: the
+/// job is atmosphere, and anything legible back there would be noise.
+struct SpaceAmbience: View {
+
+    let space: IdeaCategory
+
+    private var image: UIImage? {
+        space.coverImageData.flatMap(UIImage.init(data:))
+    }
+
+    var body: some View {
+        ZStack {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+                    .blur(radius: 70)
+                    .saturation(0.7)
+                    .opacity(0.5)
+            } else if let preset = SpaceCoverPreset.preset(id: space.coverPresetID) {
+                SpaceCoverPresetArt(preset: preset)
+                    .blur(radius: 70)
+                    .opacity(0.45)
+            } else {
+                // No picture to borrow, so the colour does the work on its own.
+                RadialGradient(
+                    colors: [space.color.opacity(0.34), .clear],
+                    center: .init(x: 0.5, y: 0.3),
+                    startRadius: 0,
+                    endRadius: 520
+                )
+            }
+
+            // Pulls everything back to the app's ground at the edges, so the blur never
+            // reads as a photograph someone forgot to crop.
+            LinearGradient(
+                colors: [
+                    Theme.Palette.canvas.opacity(0.35),
+                    Theme.Palette.canvas.opacity(0.75),
+                    Theme.Palette.canvas,
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+        .clipped()
+        .allowsHitTesting(false)
+    }
+}
+
 /// The button that opens the appearance chooser.
 ///
 /// Lives in the navigation bar. A paintbrush rather than a photo icon, because the sheet
