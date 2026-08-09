@@ -225,7 +225,36 @@ extension Idea {
     /// added and usually the order they were meant.
     var stepRank: Int { stepOrder }
 
+    /// The colour of the **Space** this idea lives in, not the Collection inside it.
+    ///
+    /// A Collection inherits its Space's colour, so most of the time these are the same —
+    /// but "most of the time" is not good enough for the map, where a Collection that has
+    /// drifted would draw a node in a colour matching no filter chip on the screen. Reading
+    /// the root makes "the nodes are the colour of their Space" true by construction rather
+    /// than by everything downstream staying in step.
+    var spaceColorHex: String? { category?.rootFolder.colorHex }
+
     func touch() {
         updatedAt = .now
+    }
+}
+
+// MARK: - Listing
+
+extension Sequence where Element == Idea {
+
+    /// Everything except roadmap steps.
+    ///
+    /// **Every screen that lists or counts ideas must go through this.** Steps were being
+    /// filtered in exactly one place — the Ideas list — which is how they went on appearing
+    /// inside Spaces, inflating Space counts and padding the weekly total, all while
+    /// looking fixed. Filtering by hand at each call site is what produced that, so the
+    /// rule now has one name and one implementation.
+    ///
+    /// "Price three suppliers" is not a thought worth keeping; it is a thing to do on the
+    /// way to one. It belongs under its goal and nowhere else. A to-do *list* may still
+    /// show it — it genuinely is a to-do — but an *idea* listing may not.
+    var excludingSteps: [Idea] {
+        filter { !$0.isRoadmapStep }
     }
 }

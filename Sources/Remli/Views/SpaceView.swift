@@ -36,7 +36,10 @@ struct SpaceView: View {
         let collectionIDs = Set(collections.map(\.id))
 
         var result: [Idea] = []
-        for idea in allIdeas {
+        // Roadmap steps carry their goal's Space so they can be coloured on the roadmap,
+        // which meant they also turned up here, filed alongside the ideas they are steps
+        // towards. A Space is a place for thoughts; the steps live under their goal.
+        for idea in allIdeas.excludingSteps {
             guard let place = idea.category else { continue }
 
             if let focusedCollection {

@@ -223,7 +223,10 @@ extension IdeaGraph {
             GraphNode(
                 id: idea.id,
                 title: idea.displayTitle,
-                colorHex: idea.category?.colorHex,
+                // The Space's colour, not the Collection's. The filter chips along the top
+                // of the map are coloured by Space, so reading anything else here would
+                // let a node sit in a colour that matches no chip on the screen.
+                colorHex: idea.spaceColorHex,
                 status: idea.status,
                 // The person's correction where they have made one. This is the line that
                 // makes disagreeing with the importance score change what you see.

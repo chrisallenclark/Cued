@@ -15,7 +15,7 @@ struct IdeasListView: View {
     private let embeddings = EmbeddingService()
 
     private var collections: [SmartCollection] {
-        SmartCollection.available(for: ideas.filter { !$0.isRoadmapStep })
+        SmartCollection.available(for: ideas.excludingSteps)
     }
 
     /// Pinned ideas float to the top of every collection — a pin means "keep this in front
@@ -25,7 +25,7 @@ struct IdeasListView: View {
 
         // Roadmap steps are deliberately absent. They live on their roadmap; showing them
         // here turns the Ideas list into a task list and buries the actual ideas.
-        let filtered = ideas.filter { !$0.isRoadmapStep && collection.matches($0) }
+        let filtered = ideas.excludingSteps.filter { collection.matches($0) }
         return filtered.sorted { lhs, rhs in
             if lhs.pinned != rhs.pinned { return lhs.pinned }
             return lhs.createdAt > rhs.createdAt
@@ -150,7 +150,7 @@ struct IdeasListView: View {
             return
         }
 
-        let documents = ideas.filter { !$0.isRoadmapStep }.map(IdeaSearch.Document.init)
+        let documents = ideas.excludingSteps.map(IdeaSearch.Document.init)
         let vector = embeddings.vector(for: trimmed)
         searchHits = IdeaSearch.rank(query: trimmed, in: documents, queryVector: vector)
     }

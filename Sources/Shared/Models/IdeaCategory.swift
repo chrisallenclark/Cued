@@ -172,7 +172,12 @@ extension IdeaCategory {
         return changed
     }
 
-    var ideaCount: Int { ideas?.count ?? 0 }
+    /// How many ideas are filed here — roadmap steps excluded.
+    ///
+    /// A Space reading "Business · 14 ideas" when nine of them are steps towards one goal
+    /// is a lie about how much thinking is in there, and the number people use to decide
+    /// which Space to open.
+    var ideaCount: Int { (ideas ?? []).excludingSteps.count }
 
     // MARK: - Hierarchy
 

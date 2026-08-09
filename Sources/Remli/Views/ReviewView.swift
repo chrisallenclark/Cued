@@ -35,13 +35,21 @@ struct ReviewView: View {
             .compactMap { byID[$0.id] }
     }
 
+    /// Steps are excluded from every count on this screen, here and below.
+    ///
+    /// The line reads "captured", and a step is something Remli wrote on your behalf while
+    /// you were working an idea forward. Counting those as things you captured turns the
+    /// one honest number on the screen into a flattering one. A to-do you typed yourself
+    /// still counts — you did capture it.
     private var capturedThisWeek: [Idea] {
         let cutoff = Calendar.current.date(byAdding: .day, value: -7, to: .now) ?? .now
-        return ideas.filter { $0.createdAt >= cutoff }
+        return ideas.excludingSteps.filter { $0.createdAt >= cutoff }
     }
 
+    /// Loose to-dos only. A roadmap step belongs under its goal, where its order and its
+    /// reason are visible; listed here it is an orphan instruction with neither.
     private var openTasks: [Idea] {
-        ideas.filter { $0.kind == .task && $0.status != .done }
+        ideas.excludingSteps.filter { $0.kind == .task && $0.status != .done }
     }
 
     /// Connections Remli has proposed that nobody has answered.
@@ -58,7 +66,7 @@ struct ReviewView: View {
     private var capturedYesterday: Int {
         let calendar = Calendar.current
         guard let yesterday = calendar.date(byAdding: .day, value: -1, to: .now) else { return 0 }
-        return ideas.filter { calendar.isDate($0.createdAt, inSameDayAs: yesterday) }.count
+        return ideas.excludingSteps.filter { calendar.isDate($0.createdAt, inSameDayAs: yesterday) }.count
     }
 
     /// A finished idea whose successor has not been started. The most actionable thing the
@@ -234,7 +242,7 @@ struct ReviewView: View {
 
     private var summaryLine: String {
         let count = capturedThisWeek.count
-        let total = "\(ideas.count) captured in total"
+        let total = "\(ideas.excludingSteps.count) captured in total"
         switch count {
         case 0: return "Nothing new this week · \(total)"
         case 1: return "One idea this week · \(total)"
