@@ -1,0 +1,150 @@
+✔ Test "A confident prerequisite creates a roadmap step" passed after 0.004 seconds.
+◇ Test "Builds-on never claims an order" started.
+✔ Test "Builds-on never claims an order" passed after 0.002 seconds.
+◇ Test "Merely related ideas never claim an order" started.
+✔ Test "Merely related ideas never claim an order" passed after 0.004 seconds.
+◇ Test "A weak prerequisite is not confident enough to be a step" started.
+✔ Test "A weak prerequisite is not confident enough to be a step" passed after 0.565 seconds.
+◇ Test "Every step can explain itself" started.
+✔ Test "Every step can explain itself" passed after 0.002 seconds.
+◇ Test "A cycle does not hang the traversal" started.
+✔ Test "A cycle does not hang the traversal" passed after 0.003 seconds.
+◇ Test "To-dos stay out of the graph entirely" started.
+✔ Test "To-dos stay out of the graph entirely" passed after 0.006 seconds.
+✔ Suite "Roadmap ordering" passed after 0.591 seconds.
+◇ Suite "Smart collections" started.
+◇ Test "Selecting a Space includes the ideas inside its Collections" started.
+✔ Test "Selecting a Space includes the ideas inside its Collections" passed after 0.010 seconds.
+◇ Test "Selecting a Collection does not reach back up into its Space" started.
+✔ Test "Selecting a Collection does not reach back up into its Space" passed after 0.190 seconds.
+◇ Test "An idea with no Space matches only All" started.
+✔ Test "An idea with no Space matches only All" passed after 0.002 seconds.
+◇ Test "Each Space is followed immediately by its own Collections" started.
+✔ Test "Each Space is followed immediately by its own Collections" passed after 0.005 seconds.
+◇ Test "A Space with no direct ideas still gets a chip" started.
+✔ Test "A Space with no direct ideas still gets a chip" passed after 0.003 seconds.
+◇ Test "A chip that would show nothing is never offered" started.
+✔ Test "A chip that would show nothing is never offered" passed after 0.003 seconds.
+◇ Test "To-dos get their own chip and ideas do not appear in it" started.
+✔ Test "To-dos get their own chip and ideas do not appear in it" passed after 0.003 seconds.
+✔ Suite "Smart collections" passed after 0.244 seconds.
+◇ Suite "Space hierarchy" started.
+◇ Test "A Space with no parent is a Space, and anything under it is a Collection" started.
+✔ Test "A Space with no parent is a Space, and anything under it is a Collection" passed after 0.004 seconds.
+◇ Test "A Collection inherits its Space's colour" started.
+✔ Test "A Collection inherits its Space's colour" passed after 0.005 seconds.
+◇ Test "An explicit colour beats the inherited one" started.
+✔ Test "An explicit colour beats the inherited one" passed after 0.002 seconds.
+◇ Test "A Space counts the ideas in its Collections as well as its own" started.
+✔ Test "A Space counts the ideas in its Collections as well as its own" passed after 0.006 seconds.
+◇ Test "Collections are listed in a stable alphabetical order" started.
+✔ Test "Collections are listed in a stable alphabetical order" passed after 0.006 seconds.
+◇ Test "The display path names the Space a Collection sits in" started.
+✔ Test "The display path names the Space a Collection sits in" passed after 0.002 seconds.
+◇ Test "Walking up a cycle terminates instead of hanging" started.
+✔ Test "Walking up a cycle terminates instead of hanging" passed after 0.002 seconds.
+◇ Test "A Space the model invented is not user-owned until someone claims it" started.
+✔ Test "A Space the model invented is not user-owned until someone claims it" passed after 0.003 seconds.
+✔ Suite "Space hierarchy" passed after 0.331 seconds.
+◇ Suite "Space palette" started.
+◇ Test "Every colour sits at the same perceptual lightness" started.
+✔ Test "Every colour sits at the same perceptual lightness" passed after 0.001 seconds.
+◇ Test "Colours in the same chroma tier carry exactly the same amount of colour" started.
+✔ Test "Colours in the same chroma tier carry exactly the same amount of colour" passed after 0.001 seconds.
+◇ Test "The tiers actually descend" started.
+✔ Test "The tiers actually descend" passed after 0.001 seconds.
+◇ Test "Nothing is dark enough to be mistaken for a cold node" started.
+✔ Test "Nothing is dark enough to be mistaken for a cold node" passed after 0.001 seconds.
+◇ Test "Every hex is well-formed and unique" started.
+✔ Test "Every hex is well-formed and unique" passed after 0.001 seconds.
+◇ Test "Every family has at least one colour and every colour one family" started.
+✔ Test "Every family has at least one colour and every colour one family" passed after 0.006 seconds.
+◇ Test "An old colour snaps to the same part of the wheel" started.
+✔ Test "An old colour snaps to the same part of the wheel" passed after 0.001 seconds.
+◇ Test "A near-grey lands on a quiet colour rather than guessing a hue" started.
+✔ Test "A near-grey lands on a quiet colour rather than guessing a hue" passed after 0.001 seconds.
+◇ Test "Nonsense input still produces a usable colour" started.
+✔ Test "Nonsense input still produces a usable colour" passed after 0.001 seconds.
+◇ Test "Hue distance goes the short way round the wheel" started.
+✔ Test "Hue distance goes the short way round the wheel" passed after 0.001 seconds.
+✔ Suite "Space palette" passed after 0.039 seconds.
+◇ Suite "Space colour choice" started.
+◇ Test "A new Space is born inside the palette" started.
+✔ Test "A new Space is born inside the palette" passed after 0.003 seconds.
+◇ Test "Choosing a colour marks it as yours" started.
+✔ Test "Choosing a colour marks it as yours" passed after 0.003 seconds.
+◇ Test "Recolouring a Space carries its Collections with it" started.
+✔ Test "Recolouring a Space carries its Collections with it" passed after 0.004 seconds.
+◇ Test "A Collection you coloured yourself is left alone" started.
+✔ Test "A Collection you coloured yourself is left alone" passed after 0.003 seconds.
+◇ Test "Migration pulls old colours in and leaves chosen ones alone" started.
+✘ Test "Migration pulls old colours in and leaves chosen ones alone" recorded an issue at SpacePaletteTests.swift:219:9: Expectation failed: (changed → 4) == 1
+✘ Test "Migration pulls old colours in and leaves chosen ones alone" failed after 0.013 seconds with 1 issue.
+◇ Test "Running the migration twice changes nothing the second time" started.
+✘ Test "Running the migration twice changes nothing the second time" recorded an issue at SpacePaletteTests.swift:232:9: Expectation failed: (IdeaCategory.harmonisePalette(in: context) → 8) == 4
+✘ Test "Running the migration twice changes nothing the second time" failed after 0.007 seconds with 1 issue.
+✘ Suite "Space colour choice" failed after 0.276 seconds with 2 issues.
+↳ /// Recolouring a Space, and what happens to the ones already on the device.
+◇ Suite "Space symbols" started.
+◇ Test "Every symbol is distinct and every group is populated" started.
+✔ Test "Every symbol is distinct and every group is populated" passed after 0.001 seconds.
+◇ Test "No symbol is one of the placeholders it replaces" started.
+✔ Test "No symbol is one of the placeholders it replaces" passed after 0.001 seconds.
+◇ Test "Names the table knows get the obvious icon" started.
+✔ Test "Names the table knows get the obvious icon" passed after 0.001 seconds.
+◇ Test "Names the table does not know still get different icons" started.
+✔ Test "Names the table does not know still get different icons" passed after 0.001 seconds.
+◇ Test "The same name always gets the same icon" started.
+✔ Test "The same name always gets the same icon" passed after 0.001 seconds.
+◇ Test "An empty name still resolves to something drawable" started.
+✔ Test "An empty name still resolves to something drawable" passed after 0.001 seconds.
+◇ Test "Choosing an icon marks it as yours" started.
+✔ Test "Choosing an icon marks it as yours" passed after 0.019 seconds.
+◇ Test "Launch replaces placeholder icons and leaves real ones alone" started.
+✔ Test "Launch replaces placeholder icons and leaves real ones alone" passed after 0.003 seconds.
+◇ Test "Two Spaces made by hand no longer look identical" started.
+✔ Test "Two Spaces made by hand no longer look identical" passed after 0.002 seconds.
+◇ Test "Recolouring a Space does not disturb its icon" started.
+✔ Test "Recolouring a Space does not disturb its icon" passed after 0.004 seconds.
+◇ Test "An icon does not cascade to Collections, but the colour does" started.
+✔ Test "An icon does not cascade to Collections, but the colour does" passed after 0.010 seconds.
+✔ Suite "Space symbols" passed after 0.154 seconds.
+◇ Suite "Step visibility" started.
+◇ Test "A workshop step is recognised as a step" started.
+✔ Test "A workshop step is recognised as a step" passed after 0.016 seconds.
+◇ Test "Steps are dropped from an idea listing, to-dos are not" started.
+✔ Test "Steps are dropped from an idea listing, to-dos are not" passed after 0.004 seconds.
+◇ Test "A Space's count does not include its steps" started.
+✔ Test "A Space's count does not include its steps" passed after 0.003 seconds.
+◇ Test "A Collection's steps do not inflate its Space's count either" started.
+✔ Test "A Collection's steps do not inflate its Space's count either" passed after 0.003 seconds.
+◇ Test "Detaching a step from its roadmap turns it back into an ordinary to-do" started.
+✔ Test "Detaching a step from its roadmap turns it back into an ordinary to-do" passed after 0.004 seconds.
+◇ Test "Steps never reach the map, because the map has no tasks on it at all" started.
+✔ Test "Steps never reach the map, because the map has no tasks on it at all" passed after 0.012 seconds.
+✔ Suite "Step visibility" passed after 0.156 seconds.
+◇ Suite "Map node colour" started.
+◇ Test "An idea in a Collection takes its Space's colour" started.
+✔ Test "An idea in a Collection takes its Space's colour" passed after 0.005 seconds.
+◇ Test "A Collection that drifted still draws in its Space's colour" started.
+✔ Test "A Collection that drifted still draws in its Space's colour" passed after 0.003 seconds.
+◇ Test "Recolouring a Space recolours its nodes" started.
+✔ Test "Recolouring a Space recolours its nodes" passed after 0.003 seconds.
+◇ Test "An idea in no Space has no colour of its own" started.
+✔ Test "An idea in no Space has no colour of its own" passed after 0.006 seconds.
+✔ Suite "Map node colour" passed after 0.019 seconds.
+✘ Test run with 99 tests in 13 suites failed after 4.528 seconds with 2 issues.
+2026-08-09 15:03:04.303 xcodebuild[6730:23342] [MT] IDETestOperationsObserverDebug: 208.602 elapsed -- Testing started completed.
+2026-08-09 15:03:04.303 xcodebuild[6730:23342] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-08-09 15:03:04.303 xcodebuild[6730:23342] [MT] IDETestOperationsObserverDebug: 208.602 sec, +208.602 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/runner/Library/Developer/Xcode/DerivedData/Remli-gzzxfhfzpedildgqqxgphrqxoeka/Logs/Test/Test-Remli-2026.08.09_14-59-20-+0000.xcresult
+
+Failing tests:
+	SpaceColorChoiceTests.migrationHarmonises()
+	SpaceColorChoiceTests.migrationIsIdempotent()
+
+** TEST FAILED **
+
+Testing started
