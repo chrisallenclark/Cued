@@ -171,16 +171,29 @@ extension IdeaCategory {
     /// Matching is by hue, so a Space that was blue stays blue. Anything the person picked
     /// themselves is left alone, and anything already in the palette is skipped, which
     /// makes this idempotent and free to run on every launch.
-    @discardableResult
-    static func harmonisePalette(in context: ModelContext) -> Int {
-        let descriptor = FetchDescriptor<IdeaCategory>()
-        guard let all = try? context.fetch(descriptor) else { return 0 }
+    /// What a migration pass actually did.
+    ///
+    /// Two counters rather than one total. When this returned a single number it silently
+    /// conflated "fixed a colour" with "filled in an icon", so the count stopped meaning
+    /// anything the moment the pass learned to do two jobs — which is exactly how it
+    /// started reporting four changes for one recoloured Space.
+    struct HarmonyReport: Equatable, Sendable {
+        var colors = 0
+        var symbols = 0
+        var total: Int { colors + symbols }
+        var isEmpty: Bool { total == 0 }
+    }
 
-        var changed = 0
+    @discardableResult
+    static func harmonisePalette(in context: ModelContext) -> HarmonyReport {
+        let descriptor = FetchDescriptor<IdeaCategory>()
+        guard let all = try? context.fetch(descriptor) else { return HarmonyReport() }
+
+        var changed = HarmonyReport()
         for category in all {
             if !category.colorIsUserSet, !SpaceColor.contains(hex: category.colorHex) {
                 category.colorHex = SpaceColor.nearest(toHex: category.colorHex).hex
-                changed += 1
+                changed.colors += 1
             }
 
             // Every hand-made Space was born with the same hard-coded icon, so the icon on
@@ -189,7 +202,7 @@ extension IdeaCategory {
             // already doing its job and is left alone.
             if !category.symbolIsUserSet, SpaceSymbol.genericNames.contains(category.symbolName) {
                 category.symbolName = SpaceSymbol.suggested(for: category.name).symbolName
-                changed += 1
+                changed.symbols += 1
             }
         }
         return changed

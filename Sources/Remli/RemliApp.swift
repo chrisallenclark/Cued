@@ -21,7 +21,7 @@ struct RemliApp: App {
         // palette. Idempotent — it matches nothing once every Space is already in the set —
         // so it costs one fetch on launches after the first and needs no version flag.
         let migrated = IdeaCategory.harmonisePalette(in: result.container.mainContext)
-        if migrated > 0 {
+        if !migrated.isEmpty {
             try? result.container.mainContext.save()
         }
 

@@ -216,7 +216,11 @@ struct SpaceColorChoiceTests {
 
         let changed = IdeaCategory.harmonisePalette(in: context)
 
-        #expect(changed == 1)
+        // One colour recoloured. The symbol count is separate and non-zero here — all three
+        // were born with the placeholder icon — which is the whole reason the two are
+        // counted apart rather than added together.
+        #expect(changed.colors == 1)
+        #expect(changed.symbols == 3)
         #expect(SpaceColor.contains(hex: legacy.colorHex))
         #expect(chosen.colorHex == "1F6F63", "a chosen colour was overwritten")
         #expect(already.colorHex == SpaceColor.amber.hex)
@@ -229,7 +233,11 @@ struct SpaceColorChoiceTests {
             context.insert(IdeaCategory(name: hex, colorHex: hex))
         }
 
-        #expect(IdeaCategory.harmonisePalette(in: context) == 4)
-        #expect(IdeaCategory.harmonisePalette(in: context) == 0)
+        let first = IdeaCategory.harmonisePalette(in: context)
+        #expect(first.colors == 4)
+
+        // The property that actually matters: a second pass is a no-op, which is what lets
+        // this run on every launch with no version flag to keep in step.
+        #expect(IdeaCategory.harmonisePalette(in: context).isEmpty)
     }
 }
