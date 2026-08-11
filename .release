@@ -1,4 +1,5 @@
 Touch this file and push to trigger a signed TestFlight build.
 See the `push` trigger in .github/workflows/release.yml.
 
-build 21 — light mode, switchable in Settings; the Map stays night
+build 22 — light mode corrections: the accent is ink, not tan, and the
+           Map's ground goes charcoal in light rather than staying near-black

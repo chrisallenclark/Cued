@@ -17,6 +17,13 @@ struct MapView: View {
     @Query(sort: \Idea.createdAt, order: .reverse)
     private var ideas: [Idea]
 
+    /// The appearance the *app* is in, read before this screen overrides it for itself.
+    ///
+    /// A property wrapper resolves against what was handed to the view, not against what
+    /// the view's own body then sets on its children — so this stays the real answer even
+    /// though everything below forces dark.
+    @Environment(\.colorScheme) private var appScheme
+
     @State private var graph = IdeaGraph()
     @State private var layout: [UUID: CGPoint] = [:]
     @State private var layoutBounds: CGRect = .zero
@@ -108,13 +115,19 @@ struct MapView: View {
         }
     }
 
+    /// Dark either way, but not the *same* dark. Near-black against a paper-white app looks
+    /// like a hole cut in the screen; a charcoal reads as a lit room seen from a bright one.
+    private var ground: Color {
+        appScheme == .light ? Theme.Palette.dusk : Theme.Palette.night
+    }
+
     private var coldCount: Int {
         graph.nodes.filter { MapMetrics.isCold($0, now: renderedAt) }.count
     }
 
     var body: some View {
         ZStack {
-            Theme.Palette.night.ignoresSafeArea()
+            ground.ignoresSafeArea()
 
             if graph.nodes.count < 2 {
                 NotEnoughIdeasView(count: graph.nodes.count)
@@ -187,7 +200,10 @@ struct MapView: View {
                 orbitHub: orbitHub,
                 showsColdOnly: showsColdOnly,
                 showsLabels: showsAllLabels || committedZoom * zoom > 0.75,
-                now: renderedAt
+                now: renderedAt,
+                // A charcoal ground swallows a starfield tuned for near-black, and the
+                // stars are what give the map depth rather than flatness.
+                starBoost: appScheme == .light ? 1.9 : 1
             )
             .contentShape(Rectangle())
             .onGeometryChange(for: CGSize.self) { $0.size } action: { size in
@@ -699,6 +715,7 @@ private struct MapCanvas: View, Animatable {
     let showsColdOnly: Bool
     let showsLabels: Bool
     let now: Date
+    let starBoost: Double
 
     var animatableData: Double {
         get { progress }
@@ -764,7 +781,8 @@ private struct MapCanvas: View, Animatable {
                     height: star.radius * 2
                 ))
             }
-            context.fill(path, with: .color(Self.starColor.opacity(0.10 + Double(tier) * 0.09)))
+            let alpha = min((0.10 + Double(tier) * 0.09) * starBoost, 0.6)
+            context.fill(path, with: .color(Self.starColor.opacity(alpha)))
         }
     }
 

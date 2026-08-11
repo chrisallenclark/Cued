@@ -20,15 +20,22 @@ enum Theme {
         static let hairline = Color("Hairline", bundle: .main)
         static let ember = Color("Ember", bundle: .main)
 
-        /// The Map's ground, fixed rather than resolved.
+        /// The Map's ground in dark mode: near-black, so the glow has somewhere to fall off to.
         ///
-        /// The Map forces its colour scheme to dark so that everything inside it — cards,
-        /// chips, materials — comes out right in either appearance. That should make
-        /// `canvas` resolve dark too, but the ground is the one value where being wrong is
-        /// catastrophic rather than untidy: glowing nodes and a starfield on white are not
-        /// a dim map, they are an unreadable one. So it is stated outright, and does not
-        /// depend on environment overrides reaching an immediate-mode drawing context.
+        /// Stated outright rather than resolved. The Map forces its colour scheme to dark so
+        /// that everything inside it — cards, chips, materials — comes out right in either
+        /// appearance, and `canvas` should follow, but the ground is the one value where
+        /// being wrong is unreadable rather than untidy. An immediate-mode drawing context
+        /// is not where to find out whether an environment override arrived.
         static let night = Color(red: 0.035, green: 0.031, blue: 0.043)
+
+        /// The Map's ground in light mode: a warm charcoal rather than the same near-black.
+        ///
+        /// The Map stays dark in both appearances because its nodes are light sources. But
+        /// *how* dark should not be the same in both: near-black next to a paper-white app
+        /// is a hole cut in the screen, whereas a charcoal reads as a lit room seen from a
+        /// bright one. Still far enough below the nodes that the glow holds.
+        static let dusk = Color(red: 0.145, green: 0.141, blue: 0.133)
     }
 
     // MARK: - Spacing
