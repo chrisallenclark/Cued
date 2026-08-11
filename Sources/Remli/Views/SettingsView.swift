@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     @Bindable var store: ResurfacingSettingsStore
     let coordinator: ResurfacingCoordinator
+    @Bindable var appearance: AppearanceStore
 
     @Environment(\.dismiss) private var dismiss
 
@@ -34,6 +35,7 @@ struct SettingsView: View {
                     }
                 }
 
+                appearanceSection
                 dailySection
                 weeklySection
                 freeTimeSection
@@ -58,6 +60,27 @@ struct SettingsView: View {
     }
 
     // MARK: - Sections
+
+    /// Light, dark, or the phone's own setting.
+    ///
+    /// First, because it is the only setting here that changes what you are looking at the
+    /// instant you touch it — everything below schedules something for later.
+    private var appearanceSection: some View {
+        Section {
+            Picker("Appearance", selection: $appearance.appearance) {
+                ForEach(Appearance.allCases) { option in
+                    Label(option.name, systemImage: option.symbolName)
+                        .tag(option)
+                }
+            }
+            .pickerStyle(.inline)
+            .labelsHidden()
+        } header: {
+            Text("Appearance")
+        } footer: {
+            Text("The Map stays dark whichever you pick. Its nodes are drawn as light sources, and a glow on white is a smudge.")
+        }
+    }
 
     private var dailySection: some View {
         Section {

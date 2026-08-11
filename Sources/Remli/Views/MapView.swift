@@ -114,7 +114,7 @@ struct MapView: View {
 
     var body: some View {
         ZStack {
-            Theme.Palette.canvas.ignoresSafeArea()
+            Theme.Palette.night.ignoresSafeArea()
 
             if graph.nodes.count < 2 {
                 NotEnoughIdeasView(count: graph.nodes.count)
@@ -127,8 +127,21 @@ struct MapView: View {
                 spaceFilter
             }
         }
+        // Night, whatever the rest of the app is doing.
+        //
+        // Every node here is drawn as a light source — a halo, a translucent body, a bright
+        // ring — and a glow on white is not a dim glow, it is a smudge. The starfield has
+        // the same problem. This is the one screen where the dark ground is load-bearing
+        // rather than stylistic, which is why the whole app used to be pinned to dark: it
+        // was the cheapest way to protect this.
+        //
+        // Overriding the environment rather than the window means every `Theme.Palette`
+        // colour inside resolves to its dark variant and system materials follow, so the
+        // Map needs no separate palette of its own.
+        .environment(\.colorScheme, .dark)
         .navigationTitle("Map")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.dark, for: .navigationBar)
         // Opening the Map always shows everything.
         //
         // Panning and zooming used to persist across visits, on the theory that returning

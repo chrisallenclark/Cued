@@ -1,5 +1,4 @@
 Touch this file and push to trigger a signed TestFlight build.
 See the `push` trigger in .github/workflows/release.yml.
 
-build 20 — Spaces become a deck you swipe through, one card at a time,
-           with the centred Space's own cover blurred behind it
+build 21 — light mode, switchable in Settings; the Map stays night

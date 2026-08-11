@@ -19,6 +19,16 @@ enum Theme {
         static let inkMuted = Color("InkMuted", bundle: .main)
         static let hairline = Color("Hairline", bundle: .main)
         static let ember = Color("Ember", bundle: .main)
+
+        /// The Map's ground, fixed rather than resolved.
+        ///
+        /// The Map forces its colour scheme to dark so that everything inside it — cards,
+        /// chips, materials — comes out right in either appearance. That should make
+        /// `canvas` resolve dark too, but the ground is the one value where being wrong is
+        /// catastrophic rather than untidy: glowing nodes and a starfield on white are not
+        /// a dim map, they are an unreadable one. So it is stated outright, and does not
+        /// depend on environment overrides reaching an immediate-mode drawing context.
+        static let night = Color(red: 0.035, green: 0.031, blue: 0.043)
     }
 
     // MARK: - Spacing

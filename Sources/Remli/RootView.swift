@@ -32,6 +32,7 @@ struct RootView: View {
     @State private var connections: ConnectionEngine?
     @State private var coordinator: ResurfacingCoordinator?
     @State private var settingsStore = ResurfacingSettingsStore()
+    @State private var appearance = AppearanceStore()
     @State private var router = NotificationRouter()
 
     var body: some View {
@@ -91,7 +92,11 @@ struct RootView: View {
         }
         .sheet(isPresented: $isShowingSettings) {
             if let coordinator {
-                SettingsView(store: settingsStore, coordinator: coordinator)
+                SettingsView(
+                    store: settingsStore,
+                    coordinator: coordinator,
+                    appearance: appearance
+                )
             }
         }
         .sheet(isPresented: $isShowingReview) {
@@ -124,6 +129,9 @@ struct RootView: View {
             await processBacklog()
             await coordinator?.refresh()
         }
+        // Applied once, at the root, so every sheet and every tab inherits it. Nil means
+        // follow the phone, which is the default and the only answer that is never wrong.
+        .preferredColorScheme(appearance.appearance.colorScheme)
         .onChange(of: scenePhase) { _, phase in
             // Leaving the app is the moment to queue the next background pass and make
             // sure the plan reflects anything captured this session.
