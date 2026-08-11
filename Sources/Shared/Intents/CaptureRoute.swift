@@ -39,3 +39,25 @@ struct CaptureIdeaIntent: AppIntent {
         .result(opensIntent: OpenURLIntent(CaptureRoute.voiceURL))
     }
 }
+
+/// The same thing, with the keyboard instead of the microphone.
+///
+/// Voice is faster when you can speak, and useless when you cannot. A meeting, a quiet
+/// carriage, someone asleep in the next room — in all of them the mic is the wrong tool and
+/// the choice is between typing and losing the thought. Having both as controls means
+/// whichever surface you set up, the Action Button or the Lock Screen, you pick which one
+/// it is rather than accepting the one that happened to be built.
+struct CaptureTextIntent: AppIntent {
+
+    static var title: LocalizedStringResource = "Write an idea"
+    static var description = IntentDescription("Open Remli with the keyboard ready.")
+
+    static var openAppWhenRun: Bool = true
+
+    init() {}
+
+    @MainActor
+    func perform() async throws -> some IntentResult & OpensIntent {
+        .result(opensIntent: OpenURLIntent(CaptureRoute.textURL))
+    }
+}

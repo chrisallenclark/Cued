@@ -59,6 +59,16 @@ struct RemliShortcuts: AppShortcutsProvider {
         )
 
         AppShortcut(
+            intent: CaptureTextIntent(),
+            phrases: [
+                "Write an idea in \(.applicationName)",
+                "Type an idea in \(.applicationName)",
+            ],
+            shortTitle: "Write",
+            systemImageName: "square.and.pencil"
+        )
+
+        AppShortcut(
             intent: AddIdeaIntent(),
             phrases: [
                 "Add an idea to \(.applicationName)",

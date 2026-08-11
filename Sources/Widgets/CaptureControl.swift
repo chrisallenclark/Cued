@@ -22,3 +22,24 @@ struct CaptureControl: ControlWidget {
         .description("Start recording in Remli.")
     }
 }
+
+/// The same control, for typing.
+///
+/// A separate control rather than a toggle inside one: controls are assigned to a slot —
+/// the Action Button, a Lock Screen button — and a slot that sometimes opens the mic and
+/// sometimes the keyboard would be a slot you have to think about. Two controls means one
+/// decision, made once, at setup.
+struct CaptureTextControl: ControlWidget {
+
+    static let kind = "com.chrisallenclark.remli.control.capture.text"
+
+    var body: some ControlWidgetConfiguration {
+        StaticControlConfiguration(kind: Self.kind) {
+            ControlWidgetButton(action: CaptureTextIntent()) {
+                Label("Write", systemImage: "square.and.pencil")
+            }
+        }
+        .displayName("Write an idea")
+        .description("Open Remli with the keyboard ready.")
+    }
+}

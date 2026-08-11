@@ -36,6 +36,7 @@ struct SettingsView: View {
                 }
 
                 appearanceSection
+                fastCaptureSection
                 dailySection
                 weeklySection
                 freeTimeSection
@@ -60,6 +61,23 @@ struct SettingsView: View {
     }
 
     // MARK: - Sections
+
+    /// The routes that already existed and nobody knew about.
+    ///
+    /// A link rather than the content, because this is a thing you read once and then never
+    /// again — and Settings is somewhere people scan for a switch, not somewhere to put
+    /// seven paragraphs of instructions in the way of the switches.
+    private var fastCaptureSection: some View {
+        Section {
+            NavigationLink {
+                FastCaptureGuide()
+            } label: {
+                Label("Fast capture", systemImage: "bolt")
+            }
+        } footer: {
+            Text("Seven ways to capture an idea without opening Remli — the Action Button, a tap on the back of the phone, the Lock Screen, or just telling Siri.")
+        }
+    }
 
     /// Light, dark, or the phone's own setting.
     ///
