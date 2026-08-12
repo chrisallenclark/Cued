@@ -18,6 +18,67 @@ enum CaptureRoute {
     }
 }
 
+extension Notification.Name {
+    /// Posted the moment a capture intent runs, so an app that is already on screen reacts
+    /// without waiting for a lifecycle event that has already been and gone.
+    static let remliCaptureRequested = Notification.Name("com.chrisallenclark.remli.captureRequested")
+}
+
+/// "Somebody pressed a button and wants to capture" — recorded, then picked up by the app.
+///
+/// This replaces routing the Action Button through a `remli://` URL, which never arrived.
+/// The intent declared `openAppWhenRun` *and* returned an `OpenURLIntent`, which are two
+/// different ways of asking for the same thing: the system foregrounded the app to satisfy
+/// the first and dropped the second, so Remli opened on whatever tab you left it on and the
+/// recording never started. Exactly the symptom, and invisible from a build log.
+///
+/// A recorded request cannot be dropped. It is written before the app is on screen and read
+/// whenever the app gets there, so the ordering between launch and intent stops mattering.
+enum CaptureLaunchRequest {
+
+    enum Mode: String, Sendable {
+        case voice
+        case text
+    }
+
+    private static let modeKey = "remli.capture.pendingMode"
+    private static let stampKey = "remli.capture.pendingAt"
+
+    /// Long enough to survive a cold launch on a slow morning, short enough that a request
+    /// nobody consumed cannot switch the microphone on hours later. A stale flag opening a
+    /// live recording by itself would be the worst bug in the app.
+    static let staleAfter: TimeInterval = 25
+
+    static func request(
+        _ mode: Mode,
+        now: Date = .now,
+        defaults: UserDefaults = .standard
+    ) {
+        defaults.set(mode.rawValue, forKey: modeKey)
+        defaults.set(now.timeIntervalSince1970, forKey: stampKey)
+        NotificationCenter.default.post(name: .remliCaptureRequested, object: nil)
+    }
+
+    /// Reads and clears in one go. Nil when there is nothing pending, or when what is
+    /// pending is too old to have been meant for this launch.
+    ///
+    /// Clearing even on the stale path matters: otherwise a request that missed its moment
+    /// sits in defaults forever, failing the freshness check on every launch and never
+    /// getting tidied up.
+    static func take(now: Date = .now, defaults: UserDefaults = .standard) -> Mode? {
+        let raw = defaults.string(forKey: modeKey)
+        let stamp = defaults.double(forKey: stampKey)
+
+        defaults.removeObject(forKey: modeKey)
+        defaults.removeObject(forKey: stampKey)
+
+        guard let raw, let mode = Mode(rawValue: raw), stamp > 0 else { return nil }
+        let age = now.timeIntervalSince1970 - stamp
+        guard age >= 0, age <= staleAfter else { return nil }
+        return mode
+    }
+}
+
 /// "Hey Siri, capture an idea" — and the action behind the Control Center control, which
 /// is what makes the Action Button work.
 ///
@@ -35,8 +96,12 @@ struct CaptureIdeaIntent: AppIntent {
     init() {}
 
     @MainActor
-    func perform() async throws -> some IntentResult & OpensIntent {
-        .result(opensIntent: OpenURLIntent(CaptureRoute.voiceURL))
+    func perform() async throws -> some IntentResult {
+        // Records the request rather than returning an `OpensIntent`. Returning one
+        // alongside `openAppWhenRun` is what stopped this working: the app came forward
+        // and the URL went nowhere.
+        CaptureLaunchRequest.request(.voice)
+        return .result()
     }
 }
 
@@ -57,7 +122,8 @@ struct CaptureTextIntent: AppIntent {
     init() {}
 
     @MainActor
-    func perform() async throws -> some IntentResult & OpensIntent {
-        .result(opensIntent: OpenURLIntent(CaptureRoute.textURL))
+    func perform() async throws -> some IntentResult {
+        CaptureLaunchRequest.request(.text)
+        return .result()
     }
 }

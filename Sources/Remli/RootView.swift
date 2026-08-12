@@ -1,3 +1,4 @@
+import Combine
 import SwiftData
 import SwiftUI
 
@@ -85,10 +86,23 @@ struct RootView: View {
         .sheet(isPresented: $isCapturing, onDismiss: runBacklog) {
             CaptureSheet(autoStartVoice: captureStartsWithVoice)
         }
+        // Widgets still arrive as URLs — `widgetURL` is the only mechanism they have — so
+        // this stays. The Action Button, Control Centre and Siri no longer use it.
         .onOpenURL { url in
             guard let wantsVoice = CaptureRoute.wantsVoice(url) else { return }
             captureStartsWithVoice = wantsVoice
             isCapturing = true
+        }
+        // Three chances to notice, because the intent and the app race and either can win.
+        //
+        // Cold launch: the intent runs before this view exists, so the request is already
+        // waiting when `onAppear` fires. Warm launch: the app comes forward first and the
+        // notification arrives after. Everything else: becoming active catches it. All
+        // three read the same one-shot flag, so whichever gets there first wins and the
+        // other two find nothing.
+        .onAppear(perform: consumeCaptureRequest)
+        .onReceive(NotificationCenter.default.publisher(for: .remliCaptureRequested)) { _ in
+            consumeCaptureRequest()
         }
         .sheet(isPresented: $isShowingSettings) {
             if let coordinator {
@@ -133,12 +147,24 @@ struct RootView: View {
         // follow the phone, which is the default and the only answer that is never wrong.
         .preferredColorScheme(appearance.appearance.colorScheme)
         .onChange(of: scenePhase) { _, phase in
+            if phase == .active {
+                consumeCaptureRequest()
+            }
+
             // Leaving the app is the moment to queue the next background pass and make
             // sure the plan reflects anything captured this session.
             if phase == .background {
                 ResurfacingCoordinator.scheduleBackgroundRefresh()
             }
         }
+    }
+
+    /// Opens capture if a button asked for it. Safe to call repeatedly — the request is
+    /// cleared as it is read, so the second and third callers get nothing.
+    private func consumeCaptureRequest() {
+        guard let mode = CaptureLaunchRequest.take() else { return }
+        captureStartsWithVoice = mode == .voice
+        isCapturing = true
     }
 
     private func runBacklog() {
