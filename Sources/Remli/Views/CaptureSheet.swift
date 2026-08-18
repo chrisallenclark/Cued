@@ -4,8 +4,15 @@ import SwiftUI
 /// Capture — by voice or by typing.
 ///
 /// The design rule is that nothing stands between having a thought and it being saved.
-/// There is no title field, no category picker and no tag entry: all of that is the app's
-/// job afterwards, not the user's beforehand.
+/// There is no category picker and no tag entry: that is the app's job afterwards, not the
+/// user's beforehand.
+///
+/// The one exception is the name. Filing is genuinely better done by the app — you rarely
+/// know which Space a thought belongs to at the moment you have it — but the *name* is
+/// often the clearest part of a thought and the model can only ever infer it from the words
+/// that followed. So there is a name field, kept subordinate: one quiet line above the
+/// body, never focused, costing nothing if ignored. Skip it and enrichment titles the idea
+/// exactly as before.
 ///
 /// Voice and text are not separate modes so much as two ways of filling the same buffer.
 /// Dictate, stop, fix a word, dictate some more — it all lands in one place.
@@ -18,8 +25,11 @@ struct CaptureSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var text: String = ""
+    @State private var name: String = ""
     @State private var voice = VoiceCaptureController()
-    @FocusState private var isFocused: Bool
+
+    private enum Field { case name, body }
+    @FocusState private var focus: Field?
 
     /// What the user sees: everything typed so far, plus whatever is being said right now.
     private var displayText: String {
@@ -41,6 +51,7 @@ struct CaptureSheet: View {
                 Theme.Palette.canvas.ignoresSafeArea()
 
                 VStack(spacing: 0) {
+                    nameField
                     editor
                     Spacer(minLength: Theme.Space.md)
                     if case .failed(let message) = voice.state {
@@ -78,12 +89,38 @@ struct CaptureSheet: View {
             if autoStartVoice {
                 await voice.start()
             } else {
-                isFocused = true
+                // The body, never the name. Reaching for the name is a deliberate act; the
+                // default has to stay "start writing the thought".
+                focus = .body
             }
         }
     }
 
     // MARK: - Pieces
+
+    /// One line, quiet, above the thought.
+    ///
+    /// Deliberately not a card and not a heading: it should read as an afterthought you may
+    /// reach for, not as a form field standing between you and writing. Hiding it behind a
+    /// disclosure would have been quieter still and nobody would ever have found it.
+    private var nameField: some View {
+        VStack(spacing: 0) {
+            TextField("Name it (optional)", text: $name)
+                .font(Theme.Typography.control)
+                .foregroundStyle(Theme.Palette.ink)
+                .focused($focus, equals: .name)
+                .submitLabel(.next)
+                .onSubmit { focus = .body }
+                .textInputAutocapitalization(.sentences)
+                .padding(.horizontal, Theme.Space.lg)
+                .padding(.top, Theme.Space.xs)
+                .padding(.bottom, Theme.Space.xs)
+
+            Divider()
+                .overlay(Theme.Palette.hairline)
+                .padding(.horizontal, Theme.Space.lg)
+        }
+    }
 
     @ViewBuilder
     private var editor: some View {
@@ -115,7 +152,7 @@ struct CaptureSheet: View {
                     .foregroundStyle(Theme.Palette.ink)
                     .scrollContentBackground(.hidden)
                     .background(Color.clear)
-                    .focused($isFocused)
+                    .focused($focus, equals: .body)
                     .padding(.horizontal, Theme.Space.lg)
                     .padding(.top, Theme.Space.md)
             }
@@ -226,6 +263,11 @@ struct CaptureSheet: View {
             captureMode: usedVoice ? .voice : .text,
             transcriptRaw: usedVoice ? voice.finalizedText : nil
         )
+
+        // Left empty, this stays empty, and enrichment fills it in on the next pass exactly
+        // as it always has — it only ever writes a title over nothing.
+        idea.title = name.trimmingCharacters(in: .whitespacesAndNewlines)
+
         context.insert(idea)
 
         dismiss()

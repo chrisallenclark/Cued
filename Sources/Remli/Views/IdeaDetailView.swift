@@ -90,7 +90,7 @@ struct IdeaDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button {
-                        isEditing.toggle()
+                        if isEditing { endEditing() } else { beginEditing() }
                     } label: {
                         Label(isEditing ? "Done editing" : "Edit", systemImage: "pencil")
                     }
@@ -139,7 +139,26 @@ struct IdeaDetailView: View {
             WorkshopView(idea: idea)
         }
         .onAppear { textWhenOpened = idea.text }
-        .onDisappear(perform: reindexIfEdited)
+        .onDisappear {
+            // Swiping back counts as finishing, so the name gets the same tidy-up it would
+            // have had from the menu.
+            if isEditing { idea.setTitle(idea.title) }
+            reindexIfEdited()
+        }
+    }
+
+    private func beginEditing() {
+        withAnimation(Theme.Motion.standard) { isEditing = true }
+    }
+
+    /// Leaving edit mode tidies the name.
+    ///
+    /// Trimmed here rather than on every keystroke, because trimming as you type eats the
+    /// space before the next word. An empty result is left empty on purpose: that hands
+    /// naming back to `displayTitle`, which uses the first line of the idea.
+    private func endEditing() {
+        idea.setTitle(idea.title)
+        withAnimation(Theme.Motion.standard) { isEditing = false }
     }
 
     /// Recomputes the search vector when the text has actually changed.
@@ -168,10 +187,25 @@ struct IdeaDetailView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Theme.Space.xs) {
-            Text(idea.displayTitle)
-                .font(Theme.Typography.display)
-                .foregroundStyle(Theme.Palette.ink)
-                .fixedSize(horizontal: false, vertical: true)
+            if isEditing {
+                // The name is editable in the same breath as the body. It used to be the
+                // one piece of an idea only the model could write — you could rewrite every
+                // word underneath a heading you disagreed with, and the heading stayed.
+                TextField("Name this idea", text: $idea.title, axis: .vertical)
+                    .font(Theme.Typography.display)
+                    .foregroundStyle(Theme.Palette.ink)
+                    .textInputAutocapitalization(.sentences)
+                    .submitLabel(.done)
+                    .onChange(of: idea.title) { _, _ in idea.touch() }
+            } else {
+                Text(idea.displayTitle)
+                    .font(Theme.Typography.display)
+                    .foregroundStyle(Theme.Palette.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                    // Tapping the thing you want to change is the first thing anyone tries,
+                    // and it is a long way from here to the overflow menu.
+                    .onTapGesture { beginEditing() }
+            }
 
             HStack(spacing: Theme.Space.xs) {
                 // The chip is the control. Filing is something you reconsider while looking

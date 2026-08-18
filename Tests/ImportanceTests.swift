@@ -305,3 +305,70 @@ struct MapWeightingTests {
         #expect(squeezed.last?.hasSuffix("…") == true)
     }
 }
+
+/// Naming an idea yourself.
+///
+/// The title was the one part of an idea only the model could write: you could rewrite
+/// every word of the body and the heading above it stayed whatever enrichment decided.
+@Suite("Idea naming")
+struct IdeaNamingTests {
+
+    @Test("A name you set is kept, trimmed")
+    func setTitleTrims() {
+        let idea = Idea(text: "A long rambling thought about tripods")
+        idea.setTitle("  Filming kit  ")
+        #expect(idea.title == "Filming kit")
+        #expect(idea.displayTitle == "Filming kit")
+    }
+
+    @Test("Enrichment will not overwrite a name you set")
+    func enrichmentRespectsYourName() {
+        let idea = Idea(text: "A long rambling thought about tripods")
+        idea.setTitle("Filming kit")
+
+        // Exactly what EnrichmentService.apply does.
+        if idea.title.isEmpty { idea.title = "Tripod Purchase Plan" }
+
+        #expect(idea.title == "Filming kit")
+    }
+
+    @Test("Enrichment still names an idea you left alone")
+    func enrichmentNamesTheUnnamed() {
+        let idea = Idea(text: "A long rambling thought about tripods")
+        #expect(idea.title.isEmpty)
+
+        if idea.title.isEmpty { idea.title = "Tripod Purchase Plan" }
+        #expect(idea.displayTitle == "Tripod Purchase Plan")
+    }
+
+    @Test("Clearing the name falls back to the first line, not to Untitled")
+    func clearingFallsBackToTheBody() {
+        let idea = Idea(text: "Buy a tripod\nThe cheap one wobbles on carpet")
+        idea.setTitle("Filming kit")
+        idea.setTitle("   ")
+
+        #expect(idea.title.isEmpty)
+        #expect(idea.displayTitle == "Buy a tripod")
+    }
+
+    @Test("Setting the same name again does not count as a change")
+    func settingTheSameNameIsQuiet() {
+        let idea = Idea(text: "Buy a tripod")
+        idea.setTitle("Filming kit")
+        let touched = idea.updatedAt
+
+        idea.setTitle("Filming kit")
+
+        // updatedAt drives how brightly the idea burns on the map. Re-saving an unchanged
+        // name must not make an idea look freshly worked on.
+        #expect(idea.updatedAt == touched)
+    }
+
+    @Test("Naming an idea marks it as touched")
+    func namingTouches() {
+        let idea = Idea(text: "Buy a tripod")
+        idea.updatedAt = Date(timeIntervalSince1970: 0)
+        idea.setTitle("Filming kit")
+        #expect(idea.updatedAt > Date(timeIntervalSince1970: 0))
+    }
+}

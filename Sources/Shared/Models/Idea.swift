@@ -202,6 +202,23 @@ extension Idea {
         touch()
     }
 
+    /// Names the idea yourself.
+    ///
+    /// Enrichment only ever writes `title` when it is empty, so a name you have typed is
+    /// safe from the next pass without needing a flag to protect it.
+    ///
+    /// Clearing it back to nothing is a real choice rather than a mistake: `displayTitle`
+    /// then falls back to the first line of the idea, which for a short thought is often
+    /// the best name it could have. Note that on an idea Remli has *already* named, that
+    /// fallback is where it stays — enrichment does not run twice, so the generated name
+    /// is not recoverable once replaced.
+    func setTitle(_ newTitle: String) {
+        let trimmed = newTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed != title else { return }
+        title = trimmed
+        touch()
+    }
+
     /// Every link touching this idea, in either direction.
     var allLinks: [IdeaLink] {
         (outgoingLinks ?? []) + (incomingLinks ?? [])
